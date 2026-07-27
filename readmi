@@ -1,0 +1,23 @@
+Now upgrate the Brand name as vastra elegence or vastra handloom to Navari.com or Navari, in whole project , and in category client side have menu and its sub menu as in admin catefory under sub category  in admin panel How can we add existing product if their are already in stock or low stock,  and how can we upgrade or change the content special offer collection or Limited offer content and its time with image,  -- Done
+
+I have start all server  you have to test it on server while we add a images of category in admin but its not show on front website  in shop by category section in home page of website,  the client server URL is https://localhost:3000 and the admin url is http://localhost:4000 and the admin login user id and pass is admin@navri.com and admin123.  --- Done
+
+in my actual desing i have this status bar between hero section and shop by category but its not implement in our home page  i will share this refrence image1 make it as it is.  --- Done 
+
+In front website any one add some thing on add to whishlist, then check it login or not if he will login then add its product to whishlist if not login then open the login page or popup to customer first login then add any things on whishlist. --- Done
+
+IN front website any customer will click on add to cart then check first user was login or not , if not then login first then add product add in cart if already login add product on cart then redirect to checkout page.  --- Done
+
+In my actual desing we have a section  "New Arrivals" above review section "What Our Customers Say"  i have share the image of it.make it same desing.  and make a vlid logic to admin panel we add a product on new arrival and its show on this section and on details product page, --- Done
+
+In front website teh footer has a newsletter section we want it as it is as refrance image add this and its record will show on admin panel. as newslatter.  --- Done
+
+Need to secure my mongodb data base use password protected of my db as 12-24 charactor like Navari@9644464981$123 
+
+Need to test this project security as  Complete VAPT test.
+
+make sure all page have valid SEO optimize.  --- Done
+
+Upgrate the Admin login page with the frontend theme  with unique desing and if i have enter the wrong email and password then show the error as toast message or red text near by the form field. and also make a pass reset option to send a mail on the user email for reset password wher use will reset the password with the help of receving mail, this is for user and admin both are working on it. 
+
+Use 10 second Loader when we place a order on checkout page  and also add loader while click on add to card or whishlist icon or button for 3 sec,  and also save the shipping address for once the customer was enter and also velidate all the required field are fill by customer in check out page,  Once the order successful placed then do card empty and whishlist empty or remove the order item or product from whishlist and clear the checkout page and redirect customer in to my order page.

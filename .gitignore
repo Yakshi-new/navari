@@ -1,0 +1,53 @@
+# =========================================
+# Vastra Elegance — Root .gitignore
+# =========================================
+
+# Node dependencies
+node_modules/
+.npm
+
+# Environment variables — NEVER commit these
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+build/
+.vite/
+
+# Uploads directory (user-uploaded images)
+# Add placeholder/README to track the folder structure without images
+server/uploads/*
+!server/uploads/.gitkeep
+!server/uploads/sarees/.gitkeep
+!server/uploads/lehengas/.gitkeep
+!server/uploads/kurtis/.gitkeep
+!server/uploads/accessories/.gitkeep
+!server/uploads/banners/.gitkeep
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/settings.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp

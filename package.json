@@ -1,0 +1,16 @@
+{
+  "name": "vastra-ecommerce",
+  "version": "1.0.0",
+  "description": "Navari — Full-Stack Indian Fashion E-Commerce (React + Express + MongoDB)",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\" \"npm run admin\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "admin": "cd admin && npm run dev",
+    "seed": "cd server && node seed.js",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install && cd ../admin && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}
