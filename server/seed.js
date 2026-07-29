@@ -49,10 +49,10 @@ const seed = async () => {
   console.log('✅ Users created (admin@vastraelegance.com / admin123)');
 
   // ---- CATEGORIES ----
-  const sarees = await Category.create({ name: 'Sarees', description: 'Handwoven and designer sarees', image: '/images/category-sarees.png', displayOrder: 1 });
-  const lehengas = await Category.create({ name: 'Lehengas', description: 'Bridal and festive lehengas', image: '/images/collection.png', displayOrder: 2 });
-  const kurtis = await Category.create({ name: 'Kurtis & Suits', description: 'Ethnic and fusion kurtis', image: '/images/category-kurtis.png', displayOrder: 3 });
-  const accessories = await Category.create({ name: 'Accessories', description: 'Ethnic jewelry and accessories', image: '/images/category-accessories.png', displayOrder: 4 });
+  const sarees = await Category.create({ name: 'Sarees', description: 'Handwoven and designer sarees', image: '/uploads/sarees/hero-saree.png', displayOrder: 1 });
+  const lehengas = await Category.create({ name: 'Lehengas', description: 'Bridal and festive lehengas', image: '/uploads/banners/collection.png', displayOrder: 2 });
+  const kurtis = await Category.create({ name: 'Kurtis & Suits', description: 'Ethnic and fusion kurtis', image: '/uploads/kurtis/product-kurti.png', displayOrder: 3 });
+  const accessories = await Category.create({ name: 'Accessories', description: 'Ethnic jewelry and accessories', image: '/uploads/accessories/product-kurti.png', displayOrder: 4 });
   console.log('✅ Categories created');
 
   // ---- PRODUCTS (with slugs pre-generated) ----

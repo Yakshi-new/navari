@@ -214,10 +214,10 @@ const Home = () => {
           <div className="row g-4">
             {categories.filter((c) => !c.parent).slice(0, 4).map((cat, idx) => {
               const defaultImages = [
-                '/images/category-sarees.png',
-                '/images/category-kurtis.png',
-                '/images/category-accessories.png',
-                '/images/collection.png'
+                '/uploads/sarees/hero-saree.png',
+                '/uploads/kurtis/product-kurti.png',
+                '/uploads/accessories/product-kurti.png',
+                '/uploads/banners/collection.png'
               ];
               const img = cat.image || defaultImages[idx % 4];
 
@@ -308,7 +308,7 @@ const Home = () => {
               </div>
               <div className="col-lg-6 offer-image-col">
                 <img
-                  src={getImageUrl(specialOffer?.image || '/images/collection.png')}
+                  src={getImageUrl(specialOffer?.image || '/uploads/banners/collection.png')}
                   alt="Special Offer Collection"
                   className="img-fluid shadow-lg"
                 />
@@ -376,7 +376,7 @@ const Home = () => {
             {newArrivals.slice(0, 6).map((prod) => {
               const currentPrice = prod.discountPrice > 0 ? prod.discountPrice : prod.price;
               const originalPrice = prod.discountPrice > 0 ? prod.price : null;
-              const prodImg = prod.images?.[0] || '/images/collection.png';
+              const prodImg = prod.images?.[0] || '/uploads/banners/collection.png';
               const catName = typeof prod.category === 'object' ? prod.category?.name : prod.subcategory || 'Handloom';
 
               return (

@@ -1,5 +1,6 @@
 import React from 'react';
 import SEO from '../components/SEO';
+import { getImageUrl } from '../utils/imageUrl';
 
 const About = () => {
   return (
@@ -50,7 +51,7 @@ const About = () => {
               </div>
             </div>
             <div className="col-lg-6 text-center">
-              <img src="/images/category-sarees.png" alt="Saree Weaving" className="img-fluid rounded shadow-lg" style={{ maxHeight: '420px', objectFit: 'cover' }} />
+              <img src={getImageUrl('/uploads/sarees/hero-saree.png')} alt="Saree Weaving" className="img-fluid rounded shadow-lg" style={{ maxHeight: '420px', objectFit: 'cover' }} />
             </div>
           </div>
         </div>

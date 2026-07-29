@@ -14,7 +14,7 @@ const SpecialOffer = () => {
     subtitle: 'Get up to 40% OFF on select Bridal Lehengas & Handloom Silk Sarees.',
     couponCode: 'NAVARI20',
     offerEndDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), // YYYY-MM-DDTHH:mm
-    image: '/images/collection.png',
+    image: '/uploads/banners/collection.png',
     primaryBtnText: 'Shop the Sale',
     primaryBtnLink: '/shop?sort=sale',
     isActive: true,
@@ -36,7 +36,7 @@ const SpecialOffer = () => {
             offerEndDate: existingOffer.offerEndDate
               ? new Date(existingOffer.offerEndDate).toISOString().slice(0, 16)
               : new Date().toISOString().slice(0, 16),
-            image: existingOffer.image || '/images/collection.png',
+            image: existingOffer.image || '/uploads/banners/collection.png',
             primaryBtnText: existingOffer.primaryBtnText || 'Shop the Sale',
             primaryBtnLink: existingOffer.primaryBtnLink || '/shop?sort=sale',
             isActive: existingOffer.isActive !== undefined ? existingOffer.isActive : true,

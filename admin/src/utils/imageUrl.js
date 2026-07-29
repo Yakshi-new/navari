@@ -7,7 +7,17 @@
  * In production: Set VITE_SERVER_URL=https://your-render-service.onrender.com
  *   in your Vercel / hosting environment variables.
  */
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || '';
+const getBackendBaseUrl = () => {
+  if (import.meta.env.VITE_SERVER_URL) {
+    return import.meta.env.VITE_SERVER_URL.replace(/\/$/, '');
+  }
+  if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.startsWith('http')) {
+    return import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
+  }
+  return '';
+};
+
+const SERVER_URL = getBackendBaseUrl();
 
 /**
  * Converts a stored image path to a fully-qualified URL.
