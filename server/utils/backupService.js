@@ -127,7 +127,14 @@ const runBackup = async ({ manual = false } = {}) => {
     for (const modelName of modelNames) {
       try {
         const Model = mongoose.model(modelName);
-        const documents = await Model.find({}).lean();
+        // ✅ VAPT (HIGH-02 / MED-07): Exclude sensitive fields from backup dumps.
+        // Password hashes, session tokens, and reset tokens must never be written
+        // to plaintext JSON files — exposure could enable offline cracking or session hijacking.
+        const SENSITIVE_FIELD_EXCLUSIONS = {
+          User: '-password -sessionId -resetPasswordToken -resetPasswordExpire',
+        };
+        const exclusions = SENSITIVE_FIELD_EXCLUSIONS[modelName] || '';
+        const documents = await Model.find({}).select(exclusions).lean();
         const filePath = path.join(backupDir, `${modelName.toLowerCase()}s.json`);
         fs.writeFileSync(filePath, JSON.stringify(documents, null, 2), 'utf8');
         backedUp.push(modelName);

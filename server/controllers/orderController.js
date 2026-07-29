@@ -49,19 +49,32 @@ const createOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  // Coupon validation
+  // ✅ VAPT (HIGH-04): Atomic coupon validation — prevents race-condition double-use of limited coupons
   let discount = 0;
   if (couponCode) {
     const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
     if (coupon && coupon.expiresAt > new Date() && subtotal >= coupon.minOrderAmount) {
+      // Enforce usageLimit atomically to prevent concurrent requests bypassing the limit
+      if (coupon.usageLimit > 0) {
+        const atomicCoupon = await Coupon.findOneAndUpdate(
+          { _id: coupon._id, usedCount: { $lt: coupon.usageLimit } },
+          { $inc: { usedCount: 1 } },
+          { new: true }
+        );
+        if (!atomicCoupon) {
+          res.status(400);
+          throw new Error('Coupon usage limit has been reached');
+        }
+      } else {
+        // No usage limit — simple increment is safe
+        await Coupon.findByIdAndUpdate(coupon._id, { $inc: { usedCount: 1 } });
+      }
       if (coupon.discountType === 'percentage') {
         discount = (subtotal * coupon.discountValue) / 100;
         if (coupon.maxDiscountAmount > 0) discount = Math.min(discount, coupon.maxDiscountAmount);
       } else {
         discount = coupon.discountValue;
       }
-      coupon.usedCount += 1;
-      await coupon.save();
     }
   }
 
@@ -117,6 +130,12 @@ const createOrder = asyncHandler(async (req, res) => {
 const verifyPayment = asyncHandler(async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
 
+  // ✅ VAPT (CRIT-02): Validate orderId format before DB query — prevents NoSQL injection
+  if (!orderId || !/^[a-f\d]{24}$/i.test(orderId)) {
+    res.status(400);
+    throw new Error('Invalid order ID');
+  }
+
   const body = razorpay_order_id + '|' + razorpay_payment_id;
   const expectedSignature = crypto
     .createHmac('sha256', process.env.RAZORPAY_SECRET)
@@ -133,6 +152,12 @@ const verifyPayment = asyncHandler(async (req, res) => {
   if (!existingOrder) {
     res.status(404);
     throw new Error('Order not found');
+  }
+
+  // ✅ VAPT (CRIT-02): Verify that the authenticated user owns this order — prevents IDOR
+  if (existingOrder.user.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized');
   }
 
   // Decrement stock now that payment is confirmed
@@ -229,9 +254,23 @@ const getAllOrders = asyncHandler(async (req, res) => {
   const limit = parseInt(req.query.limit) || 20;
   const skip = (page - 1) * limit;
 
+  // ✅ VAPT (CRIT-03): Whitelist filter values against schema enums — prevents query injection
+  const VALID_ORDER_STATUSES = ['payment_pending','placed','confirmed','processing','shipped','out_for_delivery','delivered','cancelled','returned'];
+  const VALID_PAYMENT_STATUSES = ['pending','paid','failed','refunded'];
+
   const filter = {};
-  if (req.query.status) filter.orderStatus = req.query.status;
-  if (req.query.paymentStatus) filter.paymentStatus = req.query.paymentStatus;
+  if (req.query.status) {
+    if (!VALID_ORDER_STATUSES.includes(req.query.status)) {
+      res.status(400); throw new Error('Invalid order status filter');
+    }
+    filter.orderStatus = req.query.status;
+  }
+  if (req.query.paymentStatus) {
+    if (!VALID_PAYMENT_STATUSES.includes(req.query.paymentStatus)) {
+      res.status(400); throw new Error('Invalid payment status filter');
+    }
+    filter.paymentStatus = req.query.paymentStatus;
+  }
 
   const [orders, total] = await Promise.all([
     Order.find(filter)
@@ -253,6 +292,14 @@ const getAllOrders = asyncHandler(async (req, res) => {
 // @route  PUT /api/orders/:id/status
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { orderStatus, note, trackingNumber, courierName, courierTrackingUrl } = req.body;
+
+  // ✅ VAPT (HIGH-03): Whitelist valid order statuses — prevents arbitrary value injection
+  // Note: findByIdAndUpdate does NOT enforce schema enum by default (runValidators needed)
+  const VALID_STATUSES = ['placed','confirmed','processing','shipped','out_for_delivery','delivered','cancelled','returned'];
+  if (!orderStatus || !VALID_STATUSES.includes(orderStatus)) {
+    res.status(400);
+    throw new Error('Invalid order status');
+  }
 
   const update = {
     orderStatus,
@@ -283,7 +330,8 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     update.courierTrackingUrl = courierTrackingUrl;
   }
 
-  const order = await Order.findByIdAndUpdate(req.params.id, update, { new: true });
+  // ✅ VAPT (HIGH-03): runValidators: true enforces schema-level enum constraints on update
+  const order = await Order.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
   if (!order) {
     res.status(404);
     throw new Error('Order not found');
@@ -312,11 +360,17 @@ const cancelOrder = asyncHandler(async (req, res) => {
   order.statusHistory.push({ status: 'cancelled', note: req.body.reason || 'Cancelled by customer' });
   await order.save();
 
-  // Restore stock
-  for (const item of order.items) {
-    await Product.findByIdAndUpdate(item.product, {
-      $inc: { stock: item.quantity, soldCount: -item.quantity },
-    });
+  // ✅ VAPT (HIGH-05): Only restore stock if it was actually decremented.
+  // Razorpay orders: stock is NOT decremented until payment is confirmed.
+  // So only restore if: COD/UPI order, or Razorpay with confirmed payment.
+  // Without this guard, cancelling an unpaid Razorpay order inflates stock.
+  const wasStockDecremented = order.paymentMethod !== 'razorpay' || order.paymentStatus === 'paid';
+  if (wasStockDecremented) {
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity, soldCount: -item.quantity },
+      });
+    }
   }
 
   res.json({ success: true, data: order });
@@ -370,8 +424,16 @@ const trackOrder = asyncHandler(async (req, res) => {
     throw new Error('Please provide an order number');
   }
 
+  // ✅ VAPT (CRIT-01): Phone is MANDATORY — prevents unauthenticated PII enumeration.
+  // Without this, any caller can enumerate order numbers and harvest full customer PII.
+  if (!phone) {
+    res.status(400);
+    throw new Error('Phone number is required for order tracking');
+  }
+
+  // Populate only user.phone for verification — do NOT expose name or email
   const order = await Order.findOne({ orderNumber: q.trim().toUpperCase() })
-    .populate('user', 'name phone email')
+    .populate('user', 'phone')
     .select('orderNumber orderStatus paymentMethod paymentStatus shippingAddress items totalAmount trackingNumber courierName courierTrackingUrl statusHistory createdAt deliveredAt');
 
   if (!order) {
@@ -379,18 +441,21 @@ const trackOrder = asyncHandler(async (req, res) => {
     throw new Error('Order not found. Please check the order number.');
   }
 
-  // Verify phone number matches shipping address or user phone
-  if (phone) {
-    const ph = phone.replace(/\D/g, '');
-    const addrPhone = (order.shippingAddress?.phone || '').replace(/\D/g, '');
-    const userPhone = (order.user?.phone || '').replace(/\D/g, '');
-    if (ph !== addrPhone && ph !== userPhone) {
-      res.status(403);
-      throw new Error('Phone number does not match this order');
-    }
+  // Verify phone number matches shipping address or registered user phone
+  const ph = phone.toString().replace(/\D/g, '');
+  const addrPhone = (order.shippingAddress?.phone || '').replace(/\D/g, '');
+  const userPhone = (order.user?.phone || '').replace(/\D/g, '');
+
+  if (ph !== addrPhone && ph !== userPhone) {
+    res.status(403);
+    throw new Error('Phone number does not match this order');
   }
 
-  res.json({ success: true, data: order });
+  // ✅ Strip the user sub-document — only fetched for phone verification, not for response
+  const safeOrder = order.toObject();
+  delete safeOrder.user;
+
+  res.json({ success: true, data: safeOrder });
 });
 
 module.exports = {

@@ -32,7 +32,7 @@ const isStrongPassword = (password) => {
     minLowercase: 1,
     minUppercase: 1,
     minNumbers: 1,
-    minSymbols: 0, // Make symbols optional so UX is not too harsh
+    minSymbols: 1, // ✅ VAPT (MED-02): Symbols required for adequate password strength
   });
 };
 
@@ -75,7 +75,7 @@ const register = asyncHandler(async (req, res) => {
   if (!isStrongPassword(password)) {
     res.status(400);
     throw new Error(
-      'Password must be at least 8 characters and include uppercase, lowercase, and a number'
+      'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character'
     );
   }
 
@@ -225,7 +225,7 @@ const changePassword = asyncHandler(async (req, res) => {
   if (!isStrongPassword(newPassword)) {
     res.status(400);
     throw new Error(
-      'New password must be at least 8 characters and include uppercase, lowercase, and a number'
+      'New password must be at least 8 characters and include uppercase, lowercase, a number, and a special character'
     );
   }
 
@@ -245,8 +245,11 @@ const changePassword = asyncHandler(async (req, res) => {
   user.password = newPassword;
   await user.save();
 
-  // Issue new token after password change
-  const token = user.getSignedToken();
+  // ✅ VAPT (MED-01): Regenerate sessionId so all existing sessions (old tokens) are immediately
+  // invalidated. Without this, a stolen JWT remains valid for up to JWT_EXPIRE after password change.
+  const sessionId = crypto.randomUUID();
+  await User.findByIdAndUpdate(user._id, { sessionId });
+  const token = user.getSignedToken(sessionId);
   res.json({ success: true, message: 'Password changed successfully', token });
 });
 
@@ -393,9 +396,10 @@ const forgotPassword = asyncHandler(async (req, res) => {
   await user.save({ validateBeforeSave: false });
 
   // Create reset url
-  // Admin portal is on port 4000, client is on port 3000
-  const port = user.role === 'admin' ? 4000 : 3000;
-  const resetUrl = `http://localhost:${port}/reset-password/${resetToken}`;
+  // ✅ VAPT (HIGH-01): Use environment variables for reset URL — never hardcode localhost in production
+  const clientUrl = (process.env.CLIENT_URL || 'http://localhost:3000').split(',')[0].trim();
+  const adminUrl  = (process.env.ADMIN_URL  || 'http://localhost:4000').trim();
+  const resetUrl  = `${user.role === 'admin' ? adminUrl : clientUrl}/reset-password/${resetToken}`;
 
   const message = `You are receiving this email because you (or someone else) have requested the reset of a password. Please make a PUT request to:\n\n${resetUrl}\n\nThis link is valid for 10 minutes only.`;
 
@@ -453,7 +457,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   // Validate password strength
   if (!isStrongPassword(password)) {
     res.status(400);
-    throw new Error('Password must be at least 8 characters and include uppercase, lowercase, and a number');
+    throw new Error('Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character');
   }
 
   // Set new password

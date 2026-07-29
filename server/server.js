@@ -43,6 +43,13 @@ initBackupScheduler();
 
 const app = express();
 
+// ✅ VAPT (MED-03): Trust proxy — required for correct client IP resolution behind Render/Heroku/nginx.
+// Without this, express-rate-limit sees the proxy IP (same for all users), which either
+// disables rate-limiting entirely or blocks all users at once.
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // =====================================================================
 // SECURITY MIDDLEWARE (must be first)
 // =====================================================================
@@ -83,7 +90,16 @@ app.use(
 );
 
 // 3. CORS — strict origin whitelist
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:3000')
+// ✅ VAPT (MED-05): Fail loudly at startup if CLIENT_URL is not configured in production.
+// Without this, a misconfigured deployment silently allows localhost as the CORS origin.
+const rawClientUrls = process.env.CLIENT_URL;
+if (!rawClientUrls && process.env.NODE_ENV === 'production') {
+  throw new Error(
+    'FATAL: CLIENT_URL environment variable is required in production. ' +
+    'Set it in your deployment dashboard (e.g., Render > Environment).'
+  );
+}
+const allowedOrigins = (rawClientUrls || 'http://localhost:3000')
   .split(',')
   .map((o) => o.trim());
 
@@ -135,11 +151,31 @@ app.use('/api', generalLimiter);
 // =====================================================================
 // LOGGING
 // =====================================================================
+// ✅ VAPT (LOW-01): Custom Morgan token that redacts sensitive query parameters from logs.
+// e.g. GET /api/orders/track?q=VE001001&phone=9876543210 → logs &phone=[REDACTED]
+morgan.token('safe-url', (req) => {
+  try {
+    const REDACTED_PARAMS = ['phone', 'email', 'password', 'token', 'resetToken'];
+    const url = new URL(req.originalUrl, 'http://localhost');
+    REDACTED_PARAMS.forEach((param) => {
+      if (url.searchParams.has(param)) url.searchParams.set(param, '[REDACTED]');
+    });
+    return url.pathname + (url.search || '');
+  } catch {
+    return req.originalUrl; // fallback — should not happen in practice
+  }
+});
+
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 } else {
-  // Production: combined log format for audit trail
-  app.use(morgan('combined'));
+  // Production: combined log format with PII-safe URL token
+  app.use(
+    morgan(
+      ':remote-addr - :remote-user [:date[clf]] ":method :safe-url HTTP/:http-version" ' +
+      ':status :res[content-length] ":referrer" ":user-agent"'
+    )
+  );
 }
 
 // =====================================================================
@@ -192,7 +228,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     success: true,
     status: 'ok',
-    env: process.env.NODE_ENV,
+    // ✅ VAPT (MED-04): env field removed — do not leak deployment environment to callers
     timestamp: new Date().toISOString(),
   });
 });

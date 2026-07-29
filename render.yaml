@@ -19,6 +19,8 @@ services:
         value: 7d
       - key: CLIENT_URL
         sync: false          # Set manually: https://vastra.vercel.app,https://vastra-admin.vercel.app
+      - key: ADMIN_URL
+        sync: false          # Set manually: https://vastra-admin.vercel.app (for admin password reset emails)
       - key: RAZORPAY_KEY_ID
         sync: false
       - key: RAZORPAY_SECRET

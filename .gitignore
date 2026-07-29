@@ -30,6 +30,7 @@ server/uploads/*
 *.log
 logs/
 npm-debug.log*
+email-debug.log     # ✅ VAPT (LOW-02): Debug logs may contain email content / SMTP traces
 
 # OS files
 .DS_Store
