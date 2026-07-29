@@ -38,6 +38,8 @@ const userSchema = new mongoose.Schema(
     avatar: { type: String, default: '' },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    // Single-session enforcement — regenerated on every login
+    sessionId: { type: String, default: null, select: false },
   },
   { timestamps: true }
 );
@@ -55,11 +57,13 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Generate JWT
-userSchema.methods.getSignedToken = function () {
-  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
-  });
+// Generate JWT — includes sessionId for single-session enforcement
+userSchema.methods.getSignedToken = function (sessionId) {
+  return jwt.sign(
+    { id: this._id, role: this.role, sessionId },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE }
+  );
 };
 
 // Generate and hash password token

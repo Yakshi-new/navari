@@ -966,3 +966,396 @@ section { padding: 72px 0; }
   line-height: 1;
   display: inline-block;
 }
+
+/* ===================== ORDER LOADER OVERLAY ===================== */
+.order-loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 26, 46, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  animation: fadeInOverlay 0.35s ease;
+}
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.order-loader-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 48px 52px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+  max-width: 380px;
+  width: 90%;
+  animation: slideUpCard 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUpCard {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.order-loader-spinner {
+  width: 72px;
+  height: 72px;
+  border: 6px solid #F0D9DF;
+  border-top-color: var(--clr-crimson);
+  border-right-color: var(--clr-gold);
+  border-radius: 50%;
+  animation: spinLoader 0.9s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+.order-loader-title {
+  font-family: var(--font-head);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--clr-dark);
+  margin-bottom: 8px;
+}
+.order-loader-sub {
+  font-size: 0.85rem;
+  color: var(--clr-muted);
+  margin-bottom: 20px;
+}
+.order-loader-progress {
+  background: #F0D9DF;
+  border-radius: 30px;
+  height: 6px;
+  overflow: hidden;
+}
+.order-loader-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--clr-crimson), var(--clr-gold));
+  border-radius: 30px;
+  animation: progressFill 10s linear forwards;
+  width: 0%;
+}
+@keyframes progressFill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+.order-loader-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+}
+.order-loader-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: var(--clr-muted);
+  transition: color 0.4s;
+}
+.order-loader-step.active {
+  color: var(--clr-crimson);
+  font-weight: 600;
+}
+.order-loader-step.done {
+  color: #198754;
+}
+.order-loader-step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ddd;
+  flex-shrink: 0;
+  transition: background 0.4s;
+}
+.order-loader-step.active .order-loader-step-dot {
+  background: var(--clr-crimson);
+  box-shadow: 0 0 0 3px rgba(196,30,58,0.2);
+}
+.order-loader-step.done .order-loader-step-dot {
+  background: #198754;
+}
+
+/* ===================== BUTTON INLINE LOADER ===================== */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.8;
+}
+.btn-loading .btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spinLoader 0.7s linear infinite;
+  margin-right: 7px;
+  vertical-align: middle;
+}
+.product-action-btn.btn-loading {
+  opacity: 0.7;
+}
+.product-action-btn.btn-loading .btn-spinner {
+  border-color: rgba(196,30,58,0.3);
+  border-top-color: var(--clr-crimson);
+  width: 12px;
+  height: 12px;
+}
+
+/* ===================== FORM VALIDATION STYLES ===================== */
+.form-control.field-error {
+  border-color: var(--clr-crimson) !important;
+  box-shadow: 0 0 0 3px rgba(196,30,58,0.12) !important;
+  animation: shake 0.4s ease;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+.field-error-msg {
+  color: var(--clr-crimson);
+  font-size: 0.75rem;
+  margin-top: 4px;
+  display: block;
+  animation: fadeInOverlay 0.25s ease;
+}
+
+/* ===================== SAVE ADDRESS CHECKBOX ===================== */
+.save-address-row {
+  background: var(--clr-pink-ll);
+  border: 1.5px solid #F0D9DF;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--clr-dark);
+  font-weight: 500;
+  cursor: pointer;
+}
+.save-address-row input[type="checkbox"] {
+  accent-color: var(--clr-crimson);
+  width: 17px;
+  height: 17px;
+}
+
+/* ===================== DELIVERY STATUS STEPPER ===================== */
+.delivery-stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+  padding: 20px 0 8px;
+  overflow-x: auto;
+}
+.delivery-stepper::before {
+  content: '';
+  position: absolute;
+  top: 34px;
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: #F0D9DF;
+  z-index: 0;
+}
+.delivery-stepper-progress {
+  position: absolute;
+  top: 34px;
+  left: 5%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--clr-crimson), var(--clr-gold));
+  z-index: 1;
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.delivery-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+  flex: 1;
+  min-width: 60px;
+}
+.delivery-step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid #E8C5CC;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #bbb;
+  transition: all 0.35s ease;
+  position: relative;
+}
+.delivery-step.done .delivery-step-dot {
+  background: var(--clr-crimson);
+  border-color: var(--clr-crimson);
+  color: #fff;
+}
+.delivery-step.active .delivery-step-dot {
+  background: #fff;
+  border-color: var(--clr-crimson);
+  color: var(--clr-crimson);
+  box-shadow: 0 0 0 4px rgba(196,30,58,0.15);
+  animation: pulseDot 1.8s infinite;
+}
+.delivery-step.cancelled .delivery-step-dot {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #fff;
+}
+@keyframes pulseDot {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(196,30,58,0.15); }
+  50%       { box-shadow: 0 0 0 8px rgba(196,30,58,0.08); }
+}
+.delivery-step-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--clr-muted);
+  text-align: center;
+  line-height: 1.3;
+  max-width: 70px;
+}
+.delivery-step.done .delivery-step-label,
+.delivery-step.active .delivery-step-label {
+  color: var(--clr-dark);
+}
+.delivery-step.active .delivery-step-label {
+  color: var(--clr-crimson);
+}
+
+/* ===================== TRACKING CHIP ===================== */
+.tracking-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #FFF5F7, #FDE8ED);
+  border: 1.5px solid #F0D9DF;
+  border-radius: 30px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--clr-dark);
+  text-decoration: none;
+  transition: var(--transition);
+}
+.tracking-chip:hover {
+  background: linear-gradient(135deg, var(--clr-crimson), var(--clr-crimson-d));
+  border-color: var(--clr-crimson);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.tracking-chip i { font-size: 0.88rem; }
+
+/* ===================== COURIER BADGE ===================== */
+.courier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--clr-dark);
+  color: #fff;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+/* ===================== ORDER CARD REDESIGN ===================== */
+.order-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(196,30,58,0.07);
+  border: 1px solid #F0D9DF;
+  overflow: hidden;
+  transition: var(--transition);
+}
+.order-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.order-card-header {
+  background: linear-gradient(135deg, #FFF5F7, #FDE8ED);
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #F0D9DF;
+}
+.order-card-body { padding: 16px 20px; }
+.order-card-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #F0D9DF;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ===================== STATUS HISTORY TIMELINE ===================== */
+.status-timeline { display: flex; flex-direction: column; gap: 0; }
+.status-timeline-item {
+  display: flex;
+  gap: 14px;
+  padding: 10px 0;
+  position: relative;
+}
+.status-timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 30px;
+  bottom: -10px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--clr-crimson), #F0D9DF);
+}
+.status-timeline-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--clr-crimson);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.status-timeline-content { flex: 1; }
+.status-timeline-title {
+  font-size: 0.87rem;
+  font-weight: 700;
+  color: var(--clr-dark);
+  text-transform: capitalize;
+}
+.status-timeline-time {
+  font-size: 0.74rem;
+  color: var(--clr-muted);
+  margin-top: 2px;
+}
+.status-timeline-note {
+  font-size: 0.77rem;
+  color: var(--clr-text);
+  margin-top: 4px;
+  font-style: italic;
+  background: var(--clr-pink-ll);
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+

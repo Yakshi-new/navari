@@ -18,6 +18,15 @@ Need to test this project security as  Complete VAPT test.
 
 make sure all page have valid SEO optimize.  --- Done
 
-Upgrate the Admin login page with the frontend theme  with unique desing and if i have enter the wrong email and password then show the error as toast message or red text near by the form field. and also make a pass reset option to send a mail on the user email for reset password wher use will reset the password with the help of receving mail, this is for user and admin both are working on it. 
+Upgrate the Admin login page with the frontend theme  with unique desing and if i have enter the wrong email and password then show the error as toast message or red text near by the form field. and also make a pass reset option to send a mail on the user email for reset password wher use will reset the password with the help of receving mail, this is for user and admin both are working on it.  --- Need to testing
 
-Use 10 second Loader when we place a order on checkout page  and also add loader while click on add to card or whishlist icon or button for 3 sec,  and also save the shipping address for once the customer was enter and also velidate all the required field are fill by customer in check out page,  Once the order successful placed then do card empty and whishlist empty or remove the order item or product from whishlist and clear the checkout page and redirect customer in to my order page.
+Use 10 second Loader when we place a order on checkout page  and also add loader while click on add to card or whishlist icon or button for 3 sec,  and also save the shipping address for once the customer was enter and also velidate all the required field are fill by customer in check out page,  Once the order successful placed then do card empty and whishlist empty or remove the order item or product from whishlist and clear the checkout page and redirect customer in to my order page. --- Need to testing
+
+Payment mode integration (Rozarpay integrated).   ---Need to testing
+
+i have type a third party for delevery my product so i want to set the delevery status in every whare where the order was accepted or created to delever the user.  --- Need to testing
+
+For admin panel once the window is in active due to 5 min then auto logout the user and clear the browser cache, or once the window of the admin panel is closed the user will auto logout and cache is clear the admin force to login in both condition and also a single user can login in once panel not multiple panel or browser means a admin or a client is login in single window if the want to login in another browser where is login in a browser it login in new browser or windows but the old login was terminate or force log out and cache clear. --- Done
+
+Add a daly data backup function in admin who can take a daly data backup in auto on time 00:10 AM -  in a backup/navari/data  Folder. and also its store only 15 days backup for memory optimize remove the oldest data from 15 days. --- Done
+

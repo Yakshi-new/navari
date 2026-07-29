@@ -72,6 +72,7 @@ const Orders = () => {
                     <th>Customer</th>
                     <th>Total</th>
                     <th>Payment</th>
+                    <th>Tracking</th>
                     <th>Status</th>
                     <th>Action</th>
                   </tr>
@@ -96,6 +97,24 @@ const Orders = () => {
                           <span className={`badge-crm ${ord.paymentStatus === 'paid' ? 'success' : 'warning'}`} style={{ textTransform: 'capitalize' }}>
                             {ord.paymentStatus}
                           </span>
+                        </td>
+                        <td>
+                          {ord.trackingNumber ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              {ord.courierName && (
+                                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--txt-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{ord.courierName}</span>
+                              )}
+                              {ord.courierTrackingUrl ? (
+                                <a href={ord.courierTrackingUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--clr-accent)', textDecoration: 'none' }}>
+                                  {ord.trackingNumber} ↗
+                                </a>
+                              ) : (
+                                <span style={{ fontSize: '12px', fontWeight: 600 }}>{ord.trackingNumber}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span style={{ color: 'var(--txt-muted)', fontSize: '12px' }}>—</span>
+                          )}
                         </td>
                         <td>
                           <span className={`badge-crm ${st.cls}`}>{st.label}</span>

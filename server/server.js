@@ -31,8 +31,15 @@ const adminRoutes = require('./routes/adminRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const newsletterRoutes = require('./routes/newsletterRoutes');
 
+// Backup scheduler — runs daily at 00:10 AM IST
+const { initBackupScheduler } = require('./utils/backupScheduler');
+
 // Connect to MongoDB
 connectDB();
+
+// Start daily backup scheduler after DB is connected
+// All models are imported above (via route files), so mongoose.modelNames() is populated
+initBackupScheduler();
 
 const app = express();
 
@@ -101,6 +108,8 @@ app.use(
 //    API only receives JSON (no file bodies here; multipart via multer)
 app.use(express.json({ limit: '50kb' }));
 app.use(express.urlencoded({ extended: true, limit: '50kb' }));
+// text/plain needed for navigator.sendBeacon (logout-beacon endpoint)
+app.use(express.text({ limit: '4kb' }));
 
 // 5. NoSQL Injection prevention — strips $, . from req.body/query/params
 app.use(mongoSanitize({

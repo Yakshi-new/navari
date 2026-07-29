@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -9,6 +9,25 @@ const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  /**
+   * On mount: check if we were redirected here due to a forced logout.
+   * The reason is stored in sessionStorage by:
+   *   - useInactivityLogout (5-min timer)
+   *   - api.js 401 interceptor (new login from another device)
+   * Display it as a toast so the admin understands why they were kicked out.
+   */
+  useEffect(() => {
+    const reason = sessionStorage.getItem('logout_reason');
+    if (reason) {
+      // Short delay so the page has fully rendered before toast appears
+      const tid = setTimeout(() => {
+        toast.error(reason, { duration: 6000, id: 'forced-logout-reason' });
+      }, 300);
+      sessionStorage.removeItem('logout_reason');
+      return () => clearTimeout(tid);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

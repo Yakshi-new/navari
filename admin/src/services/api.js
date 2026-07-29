@@ -22,7 +22,7 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Global error normalizer — auto logout on 401
+// Global error normalizer
 API.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -31,10 +31,28 @@ API.interceptors.response.use(
       error.message ||
       'Something went wrong. Please try again.';
     error.message = message;
+
+    // 401 from any non-login endpoint → forced logout
+    // This catches: session expired, new login from another browser/device
     if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+      // Clear storage
       localStorage.removeItem('admin_token');
-      window.location.href = '/login';
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('admin_'))
+        .forEach((k) => localStorage.removeItem(k));
+      sessionStorage.clear();
+
+      // Store message so Login page can show it as a toast
+      const reason =
+        message.includes('another device') || message.includes('another browser')
+          ? '⚠️ Your session was ended because you logged in from another device.'
+          : '🔒 Your session has expired. Please log in again.';
+      sessionStorage.setItem('logout_reason', reason);
+
+      // Hard redirect — ensures React state is fully reset
+      window.location.replace('/login');
     }
+
     return Promise.reject(error);
   }
 );

@@ -39,10 +39,10 @@ const protect = asyncHandler(async (req, res, next) => {
     throw new Error('Authentication failed. Please log in again.');
   }
 
-  // Fetch user and exclude password
-  const user = await User.findById(decoded.id).select('-password');
+  // Fetch user — include sessionId for single-session check
+  const user = await User.findById(decoded.id).select('-password +sessionId');
 
-  // ✅ VAPT: User must exist and be active (handles deleted/banned accounts)
+  // ✅ VAPT: User must exist and be active
   if (!user) {
     res.status(401);
     throw new Error('Authentication failed. Please log in again.');
@@ -50,6 +50,13 @@ const protect = asyncHandler(async (req, res, next) => {
   if (!user.isActive) {
     res.status(403);
     throw new Error('Your account has been deactivated. Please contact support.');
+  }
+
+  // ✅ Single-session enforcement: JWT sessionId must match DB sessionId
+  //    If admin logged in from another browser, DB holds new sessionId → old token is dead
+  if (decoded.sessionId && user.sessionId && decoded.sessionId !== user.sessionId) {
+    res.status(401);
+    throw new Error('Session expired. You have been logged in from another device.');
   }
 
   req.user = user;

@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await API.get('/auth/me');
       if (data.success) {
+        // Store full user profile including addresses
         setUser(data.user);
       } else {
         localStorage.removeItem('token');

@@ -21,6 +21,10 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  /* ── per-action loading states ── */
+  const [cartLoading, setCartLoading] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
   // Review states
   const [reviews, setReviews] = useState([]);
   const [reviewRating, setReviewRating] = useState(5);
@@ -78,9 +82,29 @@ const ProductDetail = () => {
       navigate('/login?redirect=checkout');
       return;
     }
-    addToCart(product, quantity, selectedSize, selectedColor);
-    toast.success(`${product.name} added to cart!`);
-    navigate('/checkout');
+    setCartLoading(true);
+    setTimeout(() => {
+      addToCart(product, quantity, selectedSize, selectedColor);
+      toast.success(`${product.name} added to cart!`);
+      setCartLoading(false);
+      navigate('/checkout');
+    }, 3000);
+  };
+
+  const handleWishlistToggle = async () => {
+    setWishlistLoading(true);
+    await new Promise((r) => setTimeout(r, 3000));
+    const res = await toggleWishlist(product._id);
+    setWishlistLoading(false);
+    if (res?.success) {
+      toast.success(res.action === 'added' ? 'Added to wishlist!' : 'Removed from wishlist!');
+    } else if (res?.requireLogin) {
+      localStorage.setItem('pendingWishlist', product._id);
+      toast.error('Please login to add items to your wishlist');
+      navigate('/login');
+    } else {
+      toast.error(res?.error || 'Failed to update wishlist');
+    }
   };
 
   const handleReviewSubmit = async (e) => {
@@ -264,8 +288,17 @@ const ProductDetail = () => {
             {/* Actions */}
             <div className="d-flex gap-3 mb-4">
               {product.stock > 0 ? (
-                <button className="btn-hero-primary flex-grow-1 py-3" onClick={handleAddToCart}>
-                  <i className="bi bi-bag-plus me-2"></i> Add to Bag
+                <button
+                  className={`btn-hero-primary flex-grow-1 py-3${cartLoading ? ' btn-loading' : ''}`}
+                  onClick={handleAddToCart}
+                  disabled={cartLoading}
+                  id="btn-add-to-bag"
+                >
+                  {cartLoading ? (
+                    <><span className="btn-spinner" />Adding to Bag…</>
+                  ) : (
+                    <><i className="bi bi-bag-plus me-2" />Add to Bag</>
+                  )}
                 </button>
               ) : (
                 <button className="btn btn-secondary flex-grow-1 disabled py-3" style={{ borderRadius: '30px' }}>
@@ -273,22 +306,20 @@ const ProductDetail = () => {
                 </button>
               )}
               <button
-                className={`btn ${isInWishlist(product._id) ? 'btn-danger' : 'btn-outline-danger'} px-4`}
+                className={`btn ${isInWishlist(product._id) ? 'btn-danger' : 'btn-outline-danger'} px-4${wishlistLoading ? ' btn-loading' : ''}`}
                 style={{ borderRadius: '30px' }}
-                onClick={async () => {
-                  const res = await toggleWishlist(product._id);
-                  if (res?.success) {
-                    toast.success(res.action === 'added' ? 'Added to wishlist!' : 'Removed from wishlist!');
-                  } else if (res?.requireLogin) {
-                    localStorage.setItem('pendingWishlist', product._id);
-                    toast.error('Please login to add items to your wishlist');
-                    navigate('/login');
-                  } else {
-                    toast.error(res?.error || 'Failed to update wishlist');
-                  }
-                }}
+                onClick={handleWishlistToggle}
+                disabled={wishlistLoading}
+                id="btn-wishlist-detail"
               >
-                <i className={`bi ${isInWishlist(product._id) ? 'bi-heart-fill' : 'bi-heart'}`}></i>
+                {wishlistLoading ? (
+                  <span
+                    className="btn-spinner"
+                    style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }}
+                  />
+                ) : (
+                  <i className={`bi ${isInWishlist(product._id) ? 'bi-heart-fill' : 'bi-heart'}`} />
+                )}
               </button>
             </div>
 

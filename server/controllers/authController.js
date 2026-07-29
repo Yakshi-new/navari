@@ -10,6 +10,7 @@
  */
 
 const asyncHandler = require('express-async-handler');
+const crypto = require('crypto');
 const validator = require('validator');
 const User = require('../models/User');
 
@@ -142,7 +143,13 @@ const login = asyncHandler(async (req, res) => {
     throw new Error('Invalid credentials'); // Same message as above
   }
 
-  const token = user.getSignedToken();
+  // Generate a fresh sessionId — this invalidates any existing session (single-session enforcement)
+  const sessionId = crypto.randomUUID();
+
+  // Persist sessionId in DB (select: false field, need explicit update)
+  await User.findByIdAndUpdate(user._id, { sessionId });
+
+  const token = user.getSignedToken(sessionId);
 
   res.json({
     success: true,
@@ -249,12 +256,12 @@ const changePassword = asyncHandler(async (req, res) => {
 // =====================================================================
 const addAddress = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
-  const { street, city, state, pincode, country, isDefault, label } = req.body;
+  const { fullName, phone, line1, line2, city, state, pincode, isDefault, label } = req.body;
 
   // Basic presence validation
-  if (!street || !city || !state || !pincode) {
+  if (!fullName || !line1 || !city || !state || !pincode) {
     res.status(400);
-    throw new Error('Street, city, state and pincode are required');
+    throw new Error('Full name, address line 1, city, state and pincode are required');
   }
 
   // Pincode format
@@ -271,13 +278,20 @@ const addAddress = asyncHandler(async (req, res) => {
 
   const newAddress = {
     label: sanitizeName(label || 'Home'),
-    street: sanitizeName(street),
+    fullName: sanitizeName(fullName),
+    phone: phone ? phone.toString().trim() : '',
+    line1: sanitizeName(line1),
+    line2: sanitizeName(line2 || ''),
     city: sanitizeName(city),
     state: sanitizeName(state),
     pincode: pincode.toString().trim(),
-    country: sanitizeName(country || 'India'),
     isDefault: Boolean(isDefault),
   };
+
+  // If this is the first address, make it default automatically
+  if (user.addresses.length === 0) {
+    newAddress.isDefault = true;
+  }
 
   if (newAddress.isDefault) {
     user.addresses.forEach((addr) => (addr.isDefault = false));
@@ -454,14 +468,52 @@ const resetPassword = asyncHandler(async (req, res) => {
   });
 });
 
+// =====================================================================
+// LOGOUT (Admin / any authenticated user)
+// @route  POST /api/auth/logout
+// Clears the sessionId from DB so the token is immediately invalidated.
+// Called by: inactivity timer, window-close beacon, manual logout.
+// =====================================================================
+const adminLogout = asyncHandler(async (req, res) => {
+  // Clear sessionId so old JWT will fail the session-check in auth middleware
+  await User.findByIdAndUpdate(req.user._id, { sessionId: null });
+  res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// =====================================================================
+// SET DEFAULT ADDRESS
+// @route  PUT /api/auth/addresses/:addressId/default
+// =====================================================================
+const setDefaultAddress = asyncHandler(async (req, res) => {
+  const { addressId } = req.params;
+
+  if (!addressId || !/^[a-f\d]{24}$/i.test(addressId)) {
+    res.status(400);
+    throw new Error('Invalid address ID');
+  }
+
+  const user = await User.findById(req.user._id);
+  const found = user.addresses.find((a) => a._id.toString() === addressId);
+  if (!found) {
+    res.status(404);
+    throw new Error('Address not found');
+  }
+
+  user.addresses.forEach((a) => (a.isDefault = a._id.toString() === addressId));
+  await user.save();
+  res.json({ success: true, addresses: user.addresses });
+});
+
 module.exports = {
   register,
   login,
+  adminLogout,
   getMe,
   updateProfile,
   changePassword,
   addAddress,
   deleteAddress,
+  setDefaultAddress,
   toggleWishlist,
   forgotPassword,
   resetPassword,

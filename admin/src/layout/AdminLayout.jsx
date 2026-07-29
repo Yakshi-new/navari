@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import useInactivityLogout from '../hooks/useInactivityLogout';
 
 const navGroups = [
   {
@@ -38,12 +39,24 @@ const navGroups = [
       { path: '/reviews', label: 'Reviews', icon: 'bi-star' },
     ],
   },
+  {
+    label: 'System',
+    links: [
+      { path: '/backup', label: 'Data Backup', icon: 'bi-database-fill-gear' },
+    ],
+  },
 ];
 
 const AdminLayout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // ✅ Activates all three auto-logout scenarios:
+  //    1. 5-min inactivity timer
+  //    2. Window / tab close → sendBeacon
+  //    3. 401 from new login elsewhere → handled by api.js interceptor
+  useInactivityLogout();
 
   const isActive = (path, exact = false) => {
     if (exact) return location.pathname === path;

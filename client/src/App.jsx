@@ -88,6 +88,7 @@ const App = () => (
               <Route path="checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
               <Route path="order-confirmation/:orderId" element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
               <Route path="orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+              <Route path="my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
               <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             </Route>
           </Routes>

@@ -18,6 +18,7 @@ import Reviews from './pages/Reviews';
 import Newsletters from './pages/Newsletters';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Backup from './pages/Backup';
 
 // Guard: redirect to login if not authenticated as admin
 const ProtectedRoute = ({ children }) => {
@@ -74,6 +75,7 @@ const AppRoutes = () => (
       <Route path="coupons" element={<Coupons />} />
       <Route path="newsletter" element={<Newsletters />} />
       <Route path="reviews" element={<Reviews />} />
+        <Route path="backup" element={<Backup />} />
     </Route>
 
     {/* Catch-all */}

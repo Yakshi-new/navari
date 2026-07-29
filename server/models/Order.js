@@ -40,7 +40,7 @@ const orderSchema = new mongoose.Schema(
     razorpayPaymentId: { type: String },
     orderStatus: {
       type: String,
-      enum: ['placed', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'returned'],
+      enum: ['payment_pending', 'placed', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'returned'],
       default: 'placed',
     },
     statusHistory: [
@@ -56,6 +56,8 @@ const orderSchema = new mongoose.Schema(
     couponCode: { type: String },
     totalAmount: { type: Number, required: true },
     trackingNumber: { type: String },
+    courierName: { type: String, default: '' },        // e.g. BlueDart, Delhivery, DTDC
+    courierTrackingUrl: { type: String, default: '' }, // Deep link to courier tracking page
     deliveredAt: { type: Date },
     notes: { type: String },
   },

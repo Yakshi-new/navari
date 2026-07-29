@@ -9,8 +9,14 @@ const OrderDetail = () => {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
   const [tracking, setTracking] = useState('');
+  const [courierName, setCourierName] = useState('');
   const [note, setNote] = useState('');
   const [updating, setUpdating] = useState(false);
+
+  const COURIERS = [
+    'BlueDart', 'Delhivery', 'DTDC', 'Ekart',
+    'Ecom Express', 'Xpressbees', 'Shadowfax', 'India Post', 'Other',
+  ];
 
   const fetchOrder = async () => {
     setLoading(true);
@@ -20,6 +26,7 @@ const OrderDetail = () => {
         setOrder(data.data);
         setStatus(data.data.orderStatus);
         setTracking(data.data.trackingNumber || '');
+        setCourierName(data.data.courierName || '');
       }
     } catch { toast.error('Failed to load order'); }
     finally { setLoading(false); }
@@ -31,9 +38,14 @@ const OrderDetail = () => {
     e.preventDefault();
     setUpdating(true);
     try {
-      const { data } = await API.put(`/orders/${id}/status`, { orderStatus: status, trackingNumber: tracking, note });
+      const { data } = await API.put(`/orders/${id}/status`, {
+        orderStatus: status,
+        trackingNumber: tracking,
+        courierName,
+        note,
+      });
       if (data.success) {
-        toast.success('Order status updated!');
+        toast.success('Order updated successfully!');
         setNote('');
         fetchOrder();
       }
@@ -148,6 +160,28 @@ const OrderDetail = () => {
           <div className="crm-card">
             <div className="crm-card-header"><span className="crm-card-title">Fulfillment Control</span></div>
             <div className="crm-card-body">
+
+              {/* Current tracking chip */}
+              {order.trackingNumber && (
+                <div style={{ marginBottom: '16px', padding: '10px 12px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--txt-muted)', marginBottom: '4px' }}>Current Tracking</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    {order.courierName && (
+                      <span style={{ background: 'var(--clr-accent)', color: '#fff', borderRadius: '20px', padding: '2px 8px', fontSize: '11px', fontWeight: 600 }}>
+                        {order.courierName}
+                      </span>
+                    )}
+                    {order.courierTrackingUrl ? (
+                      <a href={order.courierTrackingUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--clr-accent)', textDecoration: 'none' }}>
+                        {order.trackingNumber} ↗
+                      </a>
+                    ) : (
+                      <span style={{ fontSize: '12px', fontWeight: 700 }}>{order.trackingNumber}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handleStatusUpdate}>
                 <div className="form-group">
                   <label className="crm-label">Order Status</label>
@@ -158,8 +192,20 @@ const OrderDetail = () => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label className="crm-label">Tracking Number</label>
+                  <label className="crm-label">Courier Partner</label>
+                  <select className="crm-select" value={courierName} onChange={(e) => setCourierName(e.target.value)}>
+                    <option value="">— Select Courier —</option>
+                    {COURIERS.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="crm-label">AWB / Tracking Number</label>
                   <input className="crm-input" value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="e.g. BD-123456789" />
+                  {courierName && tracking && courierName !== 'Other' && (
+                    <div style={{ fontSize: '11px', color: 'var(--txt-muted)', marginTop: '4px' }}>
+                      ✓ Tracking URL will be auto-generated for {courierName}
+                    </div>
+                  )}
                 </div>
                 <div className="form-group">
                   <label className="crm-label">Update Note</label>

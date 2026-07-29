@@ -78,14 +78,18 @@ const createOrder = asyncHandler(async (req, res) => {
     discount,
     couponCode: couponCode || '',
     totalAmount,
-    statusHistory: [{ status: 'placed', note: 'Order placed successfully' }],
+    // For Razorpay, keep order pending until payment is verified
+    orderStatus: paymentMethod === 'razorpay' ? 'payment_pending' : 'placed',
+    statusHistory: [{ status: paymentMethod === 'razorpay' ? 'payment_pending' : 'placed', note: paymentMethod === 'razorpay' ? 'Awaiting payment' : 'Order placed successfully' }],
   });
 
-  // Decrement stock
-  for (const item of items) {
-    await Product.findByIdAndUpdate(item.product, {
-      $inc: { stock: -item.quantity, soldCount: item.quantity },
-    });
+  // Decrement stock only for COD/UPI (not Razorpay – wait for payment confirmation)
+  if (paymentMethod !== 'razorpay') {
+    for (const item of items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: -item.quantity, soldCount: item.quantity },
+      });
+    }
   }
 
   // If Razorpay, create payment order
@@ -124,13 +128,27 @@ const verifyPayment = asyncHandler(async (req, res) => {
     throw new Error('Payment verification failed');
   }
 
+  // Fetch the order to get items for stock decrement
+  const existingOrder = await Order.findById(orderId);
+  if (!existingOrder) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  // Decrement stock now that payment is confirmed
+  for (const item of existingOrder.items) {
+    await Product.findByIdAndUpdate(item.product, {
+      $inc: { stock: -item.quantity, soldCount: item.quantity },
+    });
+  }
+
   const order = await Order.findByIdAndUpdate(
     orderId,
     {
       razorpayPaymentId: razorpay_payment_id,
       paymentStatus: 'paid',
-      orderStatus: 'confirmed',
-      $push: { statusHistory: { status: 'confirmed', note: 'Payment received' } },
+      orderStatus: 'placed',
+      $push: { statusHistory: { status: 'placed', note: 'Payment received – order placed' } },
     },
     { new: true }
   );
@@ -138,10 +156,46 @@ const verifyPayment = asyncHandler(async (req, res) => {
   res.json({ success: true, data: order });
 });
 
+// @desc   Handle Razorpay payment failure / modal dismiss
+// @route  POST /api/orders/:id/payment-failed
+const handlePaymentFailure = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  // Only the owner can mark their order as failed
+  if (order.user.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized');
+  }
+
+  // Only act on orders that are still awaiting payment
+  if (order.orderStatus !== 'payment_pending') {
+    return res.json({ success: true, message: 'Order already processed' });
+  }
+
+  order.orderStatus = 'cancelled';
+  order.paymentStatus = 'failed';
+  order.statusHistory.push({ status: 'cancelled', note: 'Payment failed or cancelled by user' });
+  await order.save();
+
+  // Note: stock was never decremented for this order, so no restore needed.
+
+  res.json({ success: true, data: order });
+});
+
 // @desc   Get user orders
 // @route  GET /api/orders/my-orders
 const getMyOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ user: req.user._id })
+  const orders = await Order.find({
+    user: req.user._id,
+    // Exclude ghost orders: payment_pending means Razorpay modal opened but not paid yet
+    // Exclude payment-failed cancellations (cancelled because Razorpay payment failed)
+    orderStatus: { $nin: ['payment_pending'] },
+    $nor: [{ orderStatus: 'cancelled', paymentStatus: 'failed' }],
+  })
     .sort('-createdAt')
     .select('-__v');
   res.json({ success: true, data: orders });
@@ -198,13 +252,36 @@ const getAllOrders = asyncHandler(async (req, res) => {
 // @desc   Update order status (admin)
 // @route  PUT /api/orders/:id/status
 const updateOrderStatus = asyncHandler(async (req, res) => {
-  const { orderStatus, note, trackingNumber } = req.body;
+  const { orderStatus, note, trackingNumber, courierName, courierTrackingUrl } = req.body;
+
   const update = {
     orderStatus,
     $push: { statusHistory: { status: orderStatus, note: note || '' } },
   };
+
   if (trackingNumber) update.trackingNumber = trackingNumber;
   if (orderStatus === 'delivered') update.deliveredAt = new Date();
+
+  // Courier info
+  if (courierName) update.courierName = courierName;
+
+  // Auto-generate tracking URL if not provided but trackingNumber + courierName known
+  if (trackingNumber && courierName && !courierTrackingUrl) {
+    const num = encodeURIComponent(trackingNumber);
+    const urlMap = {
+      'BlueDart':  `https://www.bluedart.com/tracking?waybill=${num}`,
+      'Delhivery': `https://www.delhivery.com/track/package/${num}`,
+      'DTDC':      `https://www.dtdc.in/track-order?waybill=${num}`,
+      'Ekart':     `https://ekartlogistics.com/shipmenttrack/${num}`,
+      'Ecom Express': `https://ecomexpress.in/tracking/?awb_field=${num}`,
+      'Xpressbees': `https://shipment.xpressbees.com/#/shipments/${num}`,
+      'Shadowfax': `https://tracker.shadowfax.in/?awb=${num}`,
+      'India Post': `https://www.indiapost.gov.in/_layouts/15/DOP.Portal.Tracking/TrackConsignment.aspx`,
+    };
+    update.courierTrackingUrl = urlMap[courierName] || '';
+  } else if (courierTrackingUrl) {
+    update.courierTrackingUrl = courierTrackingUrl;
+  }
 
   const order = await Order.findByIdAndUpdate(req.params.id, update, { new: true });
   if (!order) {
@@ -284,13 +361,47 @@ const validateCoupon = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc   Public order tracking by orderNumber + phone
+// @route  GET /api/orders/track?q=VE001001&phone=9876543210
+const trackOrder = asyncHandler(async (req, res) => {
+  const { q, phone } = req.query;
+  if (!q) {
+    res.status(400);
+    throw new Error('Please provide an order number');
+  }
+
+  const order = await Order.findOne({ orderNumber: q.trim().toUpperCase() })
+    .populate('user', 'name phone email')
+    .select('orderNumber orderStatus paymentMethod paymentStatus shippingAddress items totalAmount trackingNumber courierName courierTrackingUrl statusHistory createdAt deliveredAt');
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found. Please check the order number.');
+  }
+
+  // Verify phone number matches shipping address or user phone
+  if (phone) {
+    const ph = phone.replace(/\D/g, '');
+    const addrPhone = (order.shippingAddress?.phone || '').replace(/\D/g, '');
+    const userPhone = (order.user?.phone || '').replace(/\D/g, '');
+    if (ph !== addrPhone && ph !== userPhone) {
+      res.status(403);
+      throw new Error('Phone number does not match this order');
+    }
+  }
+
+  res.json({ success: true, data: order });
+});
+
 module.exports = {
   createOrder,
   verifyPayment,
+  handlePaymentFailure,
   getMyOrders,
   getOrder,
   getAllOrders,
   updateOrderStatus,
   cancelOrder,
   validateCoupon,
+  trackOrder,
 };
