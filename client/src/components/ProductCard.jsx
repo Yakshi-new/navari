@@ -82,7 +82,7 @@ const ProductCard = ({ product }) => {
       onClick={() => navigate(`/product/${product.slug || product._id}`)}
     >
       <div className="product-img-wrap">
-        <img src={getImageUrl(product.images[0])} alt={product.name} className="img-fluid" />
+        <img src={getImageUrl(product.images || product.image)} alt={product.name} className="img-fluid" />
 
         <div className="product-badges">
           {product.isNew && <span className="badge-new">NEW</span>}
