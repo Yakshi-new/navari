@@ -1,7 +1,7 @@
 /**
  * imageUrl.js — Centralized image URL helper for the admin app.
  *
- * Automatically maps image paths to your Render backend server URL.
+ * Automatically maps image paths to your Render backend server URL (https://navari.onrender.com).
  */
 const getBackendBaseUrl = () => {
   if (import.meta.env.VITE_SERVER_URL) {
@@ -10,10 +10,12 @@ const getBackendBaseUrl = () => {
   if (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.startsWith('http')) {
     return import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
   }
+  // Production fallback for deployed environments (Vercel, Netlify, etc.)
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return 'https://navari.onrender.com';
+  }
   return '';
 };
-
-const SERVER_URL = getBackendBaseUrl();
 
 /**
  * Converts a stored image path to a fully-qualified URL pointing to the backend.
@@ -41,5 +43,6 @@ export const getImageUrl = (imageInput) => {
     cleanPath = '/' + cleanPath;
   }
 
-  return `${SERVER_URL}${cleanPath}`;
+  const serverUrl = getBackendBaseUrl();
+  return `${serverUrl}${cleanPath}`;
 };
