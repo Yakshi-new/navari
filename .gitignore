@@ -18,13 +18,13 @@ build/
 
 # Uploads directory (user-uploaded images)
 # Add placeholder/README to track the folder structure without images
-server/uploads/*
-!server/uploads/.gitkeep
-!server/uploads/sarees/.gitkeep
-!server/uploads/lehengas/.gitkeep
-!server/uploads/kurtis/.gitkeep
-!server/uploads/accessories/.gitkeep
-!server/uploads/banners/.gitkeep
+# server/uploads/*
+# !server/uploads/.gitkeep
+# !server/uploads/sarees/.gitkeep
+# !server/uploads/lehengas/.gitkeep
+# !server/uploads/kurtis/.gitkeep
+# !server/uploads/accessories/.gitkeep
+# !server/uploads/banners/.gitkeep
 
 # Logs
 *.log
