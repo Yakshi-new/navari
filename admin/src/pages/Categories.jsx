@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import API from '../services/api';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUrl';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -79,12 +80,7 @@ const Categories = () => {
   // Main categories for parent dropdown
   const mainCategories = categories.filter((c) => !c.parent);
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (imagePath.startsWith('http')) return imagePath;
-    if (imagePath.startsWith('/')) return imagePath;
-    return `http://localhost:5000${imagePath}`;
-  };
+
 
   const FormFields = ({ state, setState, onSubmit, submitLabel, onCancel }) => (
     <form onSubmit={onSubmit}>

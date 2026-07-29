@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import API from '../services/api';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageUrl';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -191,7 +192,7 @@ const Dashboard = () => {
                       <td>
                         <div className="d-flex align-items-center gap-2">
                           <img
-                            src={prod.images[0]?.startsWith('http') ? prod.images[0] : `http://localhost:5000${prod.images[0]}`}
+                            src={getImageUrl(prod.images[0])}
                             alt={prod.name}
                             style={{ width: '32px', height: '40px', objectFit: 'cover', borderRadius: '4px' }}
                           />

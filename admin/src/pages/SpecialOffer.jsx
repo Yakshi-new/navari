@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import API from '../services/api';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUrl';
 
 const SpecialOffer = () => {
   const [loading, setLoading] = useState(true);
@@ -231,7 +232,7 @@ const SpecialOffer = () => {
                 {form.image && (
                   <div style={{ marginTop: '12px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)' }}>
                     <img
-                      src={form.image.startsWith('http') ? form.image : form.image.startsWith('/') ? form.image : `http://localhost:5000${form.image}`}
+                      src={getImageUrl(form.image)}
                       alt="Offer preview"
                       style={{ width: '100%', height: '160px', objectFit: 'cover' }}
                     />

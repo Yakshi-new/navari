@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react';
+import { getImageUrl } from '../utils/imageUrl';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
@@ -15,14 +16,7 @@ const ProductCard = ({ product }) => {
   const [cartLoading, setCartLoading] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (imagePath.startsWith('http')) return imagePath;
-    if (imagePath.startsWith('/uploads')) return `http://localhost:5000${imagePath}`;
-    if (imagePath.startsWith('/images')) return imagePath;
-    if (imagePath.startsWith('/')) return `http://localhost:5000${imagePath}`;
-    return `http://localhost:5000/${imagePath}`;
-  };
+
 
   /* ── Add to Cart with 3s loader ── */
   const handleAddToCart = (e) => {

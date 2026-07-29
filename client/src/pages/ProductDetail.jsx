@@ -6,6 +6,7 @@ import { WishlistContext } from '../context/WishlistContext';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
+import { getImageUrl } from '../utils/imageUrl';
 
 const ProductDetail = () => {
   const { idOrSlug } = useParams();
@@ -57,14 +58,7 @@ const ProductDetail = () => {
     fetchProductDetails();
   }, [idOrSlug, navigate]);
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (imagePath.startsWith('http')) return imagePath;
-    if (imagePath.startsWith('/uploads')) return `http://localhost:5000${imagePath}`;
-    if (imagePath.startsWith('/images')) return imagePath;
-    if (imagePath.startsWith('/')) return `http://localhost:5000${imagePath}`;
-    return `http://localhost:5000/${imagePath}`;
-  };
+
 
   const handleAddToCart = () => {
     if (!product) return;

@@ -5,6 +5,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from 'recharts';
+import { getImageUrl } from '../utils/imageUrl';
 
 const PIE_COLORS = ['#6366f1', '#f59e0b', '#22c55e', '#38bdf8', '#a855f7', '#ef4444'];
 
@@ -229,7 +230,7 @@ const Dashboard = () => {
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <img
-                          src={prod.images?.[0]?.startsWith('http') ? prod.images[0] : `http://localhost:5000${prod.images?.[0]}`}
+                          src={getImageUrl(prod.images?.[0])}
                           alt={prod.name}
                           style={{ width: '32px', height: '40px', objectFit: 'cover', borderRadius: '6px' }}
                         />

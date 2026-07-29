@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import API from '../services/api';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUrl';
 
 const AddEditProduct = () => {
   const { id } = useParams();
@@ -352,7 +353,7 @@ const AddEditProduct = () => {
               {formData.images.map((img, idx) => (
                 <div key={idx} className="position-relative">
                   <img
-                    src={img.startsWith('http') ? img : `http://localhost:5000${img}`}
+                    src={getImageUrl(img)}
                     alt="preview"
                     style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '6px' }}
                   />

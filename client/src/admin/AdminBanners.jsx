@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import API from '../services/api';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUrl';
 
 const AdminBanners = () => {
   const [banners, setBanners] = useState([]);
@@ -148,7 +149,7 @@ const AdminBanners = () => {
                 <div key={banner._id} className="col-md-6">
                   <div className="card border rounded overflow-hidden">
                     <img
-                      src={banner.image?.startsWith('http') ? banner.image : `http://localhost:5000${banner.image}`}
+                      src={getImageUrl(banner.image)}
                       alt="slide"
                       style={{ height: '140px', objectFit: 'cover' }}
                     />

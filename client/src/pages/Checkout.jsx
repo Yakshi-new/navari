@@ -6,6 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
+import { getImageUrl } from '../utils/imageUrl';
 
 /* ─── Order loader step labels ─── */
 const LOADER_STEPS = [
@@ -734,7 +735,7 @@ const Checkout = () => {
                   {cartItems.map((item) => (
                     <div key={`${item.product}-${item.size}-${item.color}`} className="d-flex align-items-center gap-3">
                       <img
-                        src={item.image.startsWith('http') ? item.image : `http://localhost:5000${item.image}`}
+                        src={getImageUrl(item.image)}
                         alt={item.name}
                         style={{ width: '50px', height: '60px', objectFit: 'cover', borderRadius: '4px' }}
                       />

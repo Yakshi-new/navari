@@ -3,6 +3,7 @@ import API from '../services/api';
 import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
+import { getImageUrl } from '../utils/imageUrl';
 
 /* ── Delivery step definitions ── */
 const STEPS = [
@@ -196,7 +197,7 @@ const MyOrders = () => {
                       {(isExpanded ? order.items : order.items.slice(0, 2)).map((item, idx) => (
                         <div key={idx} className="d-flex align-items-center gap-3">
                           <img
-                            src={item.image?.startsWith('http') ? item.image : `http://localhost:5000${item.image}`}
+                            src={getImageUrl(item.image)}
                             alt={item.name}
                             style={{ width: 44, height: 54, objectFit: 'cover', borderRadius: 8, border: '1px solid #F0D9DF' }}
                             onError={(e) => { e.target.style.display = 'none'; }}

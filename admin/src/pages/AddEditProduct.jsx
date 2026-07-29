@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import API from '../services/api';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUrl';
 
 const OCCASIONS = ['all', 'bridal', 'festive', 'party', 'casual', 'office'];
 
@@ -197,7 +198,7 @@ const AddEditProduct = () => {
                   <div className="img-preview-grid">
                     {form.images.map((img, i) => (
                       <div key={i} className="img-preview-item">
-                        <img src={img.startsWith('http') ? img : `http://localhost:5000${img}`} alt="" />
+                        <img src={getImageUrl(img)} alt="" />
                         <button type="button" className="img-preview-remove" onClick={() => set('images', form.images.filter((_, idx) => idx !== i))}>×</button>
                       </div>
                     ))}

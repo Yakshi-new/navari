@@ -4,6 +4,7 @@ import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
+import { getImageUrl } from '../utils/imageUrl';
 
 const Cart = () => {
   const {
@@ -24,11 +25,7 @@ const Cart = () => {
   const [couponCode, setCouponCode] = useState(coupon ? coupon.code : '');
   const [couponLoading, setCouponLoading] = useState(false);
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:5000${imagePath}`;
-  };
+
 
   const handleCouponSubmit = async (e) => {
     e.preventDefault();

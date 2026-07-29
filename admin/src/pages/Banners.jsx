@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import API from '../services/api';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUrl';
 
 const Banners = () => {
   const [banners, setBanners] = useState([]);
@@ -147,11 +148,7 @@ const Banners = () => {
 
   const heroSlides = banners.filter((b) => b.type === 'hero');
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (imagePath.startsWith('http')) return imagePath;
-    return imagePath.startsWith('/') ? imagePath : `http://localhost:5000${imagePath}`;
-  };
+
 
   return (
     <div>

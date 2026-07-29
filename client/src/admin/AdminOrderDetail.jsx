@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import API from '../services/api';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUrl';
 
 const AdminOrderDetail = () => {
   const { id } = useParams();
@@ -80,7 +81,7 @@ const AdminOrderDetail = () => {
             {order.items?.map((item, idx) => (
               <div key={idx} className="d-flex align-items-center gap-3">
                 <img
-                  src={item.image?.startsWith('http') ? item.image : `http://localhost:5000${item.image}`}
+                  src={getImageUrl(item.image)}
                   alt={item.name}
                   style={{ width: '60px', height: '80px', objectFit: 'cover', borderRadius: '6px' }}
                 />

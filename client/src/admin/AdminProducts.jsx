@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUrl';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -89,7 +90,7 @@ const AdminProducts = () => {
                     <td>
                       <div className="d-flex align-items-center gap-3">
                         <img
-                          src={prod.images[0]?.startsWith('http') ? prod.images[0] : `http://localhost:5000${prod.images[0]}`}
+                          src={getImageUrl(prod.images[0])}
                           alt={prod.name}
                           style={{ width: '40px', height: '50px', objectFit: 'cover', borderRadius: '6px' }}
                         />
