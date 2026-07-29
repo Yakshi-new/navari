@@ -89,34 +89,63 @@ app.use(
   })
 );
 
-// 3. CORS — strict origin whitelist
-// ✅ VAPT (MED-05): Fail loudly at startup if CLIENT_URL is not configured in production.
-// Without this, a misconfigured deployment silently allows localhost as the CORS origin.
-const rawClientUrls = process.env.CLIENT_URL;
-if (!rawClientUrls && process.env.NODE_ENV === 'production') {
-  throw new Error(
-    'FATAL: CLIENT_URL environment variable is required in production. ' +
-    'Set it in your deployment dashboard (e.g., Render > Environment).'
-  );
-}
-const allowedOrigins = (rawClientUrls || 'http://localhost:3000')
-  .split(',')
-  .map((o) => o.trim());
+// 3. CORS — origin whitelist (supports Vercel previews, custom domains, and localhost)
+const rawUrls = [process.env.CLIENT_URL, process.env.ADMIN_URL].filter(Boolean).join(',');
+
+const defaultDevOrigins = [
+  'http://localhost:3000',
+  'http://localhost:4000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:4000',
+  'http://127.0.0.1:5173',
+];
+
+const allowedOrigins = (rawUrls ? rawUrls.split(',') : defaultDevOrigins)
+  .map((o) => o.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (Postman, curl, server-to-server)
+      // Allow non-browser requests (Postman, curl, server-to-server)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
+
+      const normalized = origin.replace(/\/$/, '');
+
+      // 1. Allow wildcard '*' or exact match in allowedOrigins list
+      if (allowedOrigins.includes('*') || allowedOrigins.includes(normalized)) {
         return callback(null, true);
       }
-      return callback(new Error(`CORS: Origin ${origin} not allowed`), false);
+
+      // 2. Allow any .vercel.app domain (frontend & admin deployments) and localhost
+      if (normalized.endsWith('.vercel.app') || normalized.includes('localhost') || normalized.includes('127.0.0.1')) {
+        return callback(null, true);
+      }
+
+      // 3. Allow subdomain matches for custom domain configs
+      const isDomainMatch = allowedOrigins.some((allowed) => {
+        try {
+          const allowedHost = new URL(allowed.startsWith('http') ? allowed : `https://${allowed}`).hostname;
+          const originHost = new URL(normalized).hostname;
+          return originHost === allowedHost || originHost.endsWith(`.${allowedHost}`);
+        } catch {
+          return false;
+        }
+      });
+
+      if (isDomainMatch) {
+        return callback(null, true);
+      }
+
+      console.warn(`⚠️ CORS blocked request from origin: ${origin}`);
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     exposedHeaders: ['RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset'],
+    optionsSuccessStatus: 200,
   })
 );
 
