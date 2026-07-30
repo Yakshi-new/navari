@@ -131,7 +131,7 @@ const Home = () => {
                       <div className="col-lg-6">
                         <div className="hero-img-wrap">
                           {banner.image && <img src={getImageUrl(banner.image)} alt={banner.title} />}
-                          
+
                           {/* TOP FLOATING TAG / POPUP */}
                           {(banner.topTagText || banner.topTagText === undefined) && (
                             <div className="hero-floating-tag tag-1">
@@ -273,30 +273,55 @@ const Home = () => {
                   )}
                 </h2>
                 <p className="offer-text">
-                  {specialOffer?.subtitle || 'Get up to 40% OFF on select Bridal Lehengas & Handloom Silk Sarees.'}{' '}
-                  {specialOffer?.couponCode && (
-                    <>Use checkout code <strong className="text-gold">{specialOffer.couponCode}</strong> for additional discount.</>
-                  )}
+                  {specialOffer?.subtitle || 'Get up to 20% OFF on select Bridal Lehengas & Handloom Silk Sarees.'}
                 </p>
 
-                <div className="countdown-wrap">
-                  <div className="countdown-item">
-                    <div className="countdown-num">{String(timeLeft.days).padStart(2, '0')}</div>
-                    <div className="countdown-lbl">Days</div>
+                {/* Coupon code badge — value comes from admin panel */}
+                {specialOffer?.couponCode && (
+                  <div className="coupon-badge-wrap">
+                    <span className="coupon-label">Use Code:</span>
+                    <button
+                      className="coupon-badge"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(specialOffer.couponCode);
+                      }}
+                      title="Click to copy"
+                    >
+                      <span className="coupon-code">{specialOffer.couponCode}</span>
+                      <i className="bi bi-clipboard ms-2" style={{ fontSize: '0.8rem' }} />
+                    </button>
                   </div>
-                  <div className="countdown-item">
-                    <div className="countdown-num">{String(timeLeft.hours).padStart(2, '0')}</div>
-                    <div className="countdown-lbl">Hrs</div>
+                )}
+
+                {/* Countdown — shows animated "Sale is Live!" when timer expires */}
+                {timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0 ? (
+                  <div className="sale-live-wrap">
+                    <span className="sale-live-badge">
+                      <span className="sale-live-fire">🔥</span>
+                      Sale is Live!
+                      <span className="sale-live-fire">🔥</span>
+                    </span>
                   </div>
-                  <div className="countdown-item">
-                    <div className="countdown-num">{String(timeLeft.minutes).padStart(2, '0')}</div>
-                    <div className="countdown-lbl">Mins</div>
+                ) : (
+                  <div className="countdown-wrap">
+                    <div className="countdown-item">
+                      <div className="countdown-num">{String(timeLeft.days).padStart(2, '0')}</div>
+                      <div className="countdown-lbl">Days</div>
+                    </div>
+                    <div className="countdown-item">
+                      <div className="countdown-num">{String(timeLeft.hours).padStart(2, '0')}</div>
+                      <div className="countdown-lbl">Hrs</div>
+                    </div>
+                    <div className="countdown-item">
+                      <div className="countdown-num">{String(timeLeft.minutes).padStart(2, '0')}</div>
+                      <div className="countdown-lbl">Mins</div>
+                    </div>
+                    <div className="countdown-item">
+                      <div className="countdown-num">{String(timeLeft.seconds).padStart(2, '0')}</div>
+                      <div className="countdown-lbl">Secs</div>
+                    </div>
                   </div>
-                  <div className="countdown-item">
-                    <div className="countdown-num">{String(timeLeft.seconds).padStart(2, '0')}</div>
-                    <div className="countdown-lbl">Secs</div>
-                  </div>
-                </div>
+                )}
 
                 <button className="btn-offer" onClick={() => navigate(specialOffer?.primaryBtnLink || '/shop?sort=sale')}>
                   {specialOffer?.primaryBtnText || 'Shop the Sale'}
