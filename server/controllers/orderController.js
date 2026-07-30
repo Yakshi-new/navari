@@ -6,8 +6,8 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET,
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_dummy_key',
+  key_secret: process.env.RAZORPAY_SECRET || 'dummy_secret',
 });
 
 // @desc   Create order

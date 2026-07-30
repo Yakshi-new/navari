@@ -293,13 +293,13 @@ const Home = () => {
                   </div>
                 )}
 
-                {/* Countdown — shows animated "Sale is Live!" when timer expires */}
+                {/* Countdown — shows animated "Sale is Live" heading with red dot when timer expires */}
                 {timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0 ? (
                   <div className="sale-live-wrap">
-                    <span className="sale-live-text">
+                    <h3 className="sale-live-heading">
                       Sale is Live
-                      <span className="live-dot" />
-                    </span>
+                      <span className="live-red-dot"></span>
+                    </h3>
                   </div>
                 ) : (
                   <div className="countdown-wrap">

@@ -259,30 +259,24 @@ img { max-width: 100%; }
 .coupon-badge:hover { background: rgba(201,150,60,0.28); transform: scale(1.04); }
 .coupon-code { font-size: 1rem; font-weight: 800; letter-spacing: 3px; color: var(--clr-gold-l); font-family: 'Courier New', monospace; }
 
-/* Sale is Live — heading style + red live dot */
-.sale-live-wrap { margin-bottom: 28px; }
-.sale-live-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  font-family: var(--font-head);
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
-  font-weight: 700;
-  color: var(--clr-gold-l);
-  letter-spacing: 0.5px;
-}
-.live-dot {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--clr-crimson);
-  flex-shrink: 0;
-  animation: livePulse 1.2s ease-in-out infinite;
-}
-@keyframes livePulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(196,30,58,0.7); transform: scale(1); }
-  50%       { box-shadow: 0 0 0 8px rgba(196,30,58,0); transform: scale(1.15); }
+/* Sale is Live Heading & Red Dot Indicator */
+.sale-live-wrap { margin-bottom: 24px; }
+.sale-live-heading { font-family: var(--font-head); font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; color: #fff; display: inline-flex; align-items: center; gap: 12px; margin: 0; }
+.live-red-dot { display: inline-block; width: 14px; height: 14px; background-color: #E53E3E; border-radius: 50%; box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7); animation: redDotPulse 1.5s infinite; }
+
+@keyframes redDotPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 12px rgba(229, 62, 62, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(229, 62, 62, 0);
+  }
 }
 
 .btn-offer { background: linear-gradient(135deg, var(--clr-gold), var(--clr-gold-l)); color: #fff; border: none; border-radius: 30px; padding: 13px 32px; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: var(--transition); font-family: var(--font-body); }
