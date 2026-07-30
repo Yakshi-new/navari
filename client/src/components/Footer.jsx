@@ -67,7 +67,7 @@ const Footer = () => {
       <footer className="site-footer">
         <div className="container">
           <div className="row gy-4">
-            
+
             {/* BRAND */}
             <div className="col-lg-3 col-md-6">
               <div className="footer-brand">Navari</div>
@@ -128,15 +128,15 @@ const Footer = () => {
               <h5 className="footer-heading">CONTACT US</h5>
               <div className="footer-contact-item">
                 <i className="bi bi-geo-alt-fill"></i>
-                <span>23, Silk Market Road, Varanasi, UP – 221001</span>
+                <span>72 Rajendra Nagar, Behind Siyaganj, Indore, Madhya Pradesh 452002</span>
               </div>
               <div className="footer-contact-item">
                 <i className="bi bi-telephone-fill"></i>
-                <span>+91 98765 43210</span>
+                <span>+91 9644464981</span>
               </div>
               <div className="footer-contact-item">
                 <i className="bi bi-envelope-fill"></i>
-                <span>hello@vastraelegance.in</span>
+                <span>navari@gmail.com</span>
               </div>
               <div className="footer-contact-item">
                 <i className="bi bi-clock-fill"></i>
@@ -149,7 +149,7 @@ const Footer = () => {
           {/* BOTTOM BAR */}
           <div className="footer-bottom">
             <div className="footer-bottom-text">
-              © {new Date().getFullYear()} Navari. All Rights Reserved. Crafted with love in Varanasi.
+              © 2024 Navari.com . All Rights Reserved. Crafted with love in Indore.
             </div>
             <div className="payment-icons">
               <span className="pay-icon">UPI</span>
