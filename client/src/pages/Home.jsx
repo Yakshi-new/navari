@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import ProductCard from '../components/ProductCard';
 import SEO from '../components/SEO';
+import { getImageUrl } from '../utils/imageUrl';
 
 const Home = () => {
   const [heroBanners, setHeroBanners] = useState([]);
@@ -72,12 +73,7 @@ const Home = () => {
     return () => clearInterval(timer);
   }, [specialOffer]);
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return '';
-    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
-    if (imagePath.startsWith('/')) return imagePath;
-    return `/${imagePath}`;
-  };
+  // getImageUrl is imported from utils/imageUrl — prepends VITE_SERVER_URL automatically
 
   if (loading) {
     return (
